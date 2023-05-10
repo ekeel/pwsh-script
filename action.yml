@@ -17,12 +17,23 @@ outputs:
 runs:
   using: composite
   steps:
+    - id: get_script
+      shell: pwsh
+      run: |
+        if (Test-Path ${{ inputs.script }}) {
+          $script = Get-Content ${{ inputs.script }} -Raw
+        } 
+        else {
+          $script = ${{ inputs.script }}
+        }
+        echo "SCRIPT_CONTENT=$script" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+        
     - run: ${{ github.action_path }}/action.ps1
       id: script
       shell: pwsh
       env:
         TEMP: ${{ runner.temp }}
-        PWSH_SCRIPT_ACTION_TEXT: ${{ inputs.script }}
+        PWSH_SCRIPT_ACTION_TEXT: ${{ env.SCRIPT_CONTENT }}
         PWSH_SCRIPT_ACTION_GITHUB: ${{ toJson(github) }}
         PWSH_SCRIPT_ACTION_JOB: ${{ toJson(job) }}
         PWSH_SCRIPT_ACTION_RUNNER: ${{ toJson(runner) }}
